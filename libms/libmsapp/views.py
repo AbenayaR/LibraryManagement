@@ -5,8 +5,12 @@ from .models import Book, BorrowedBook
 from .serializers import BookSerializer, BorrowedBookSerializer
 from django.contrib.auth.decorators import login_required
 from libmsapp.models import BorrowedBook, BookInstance
-from libmsapp.models import BookInstance
 from datetime import datetime, timedelta
+from django.utils import timezone
+
+
+def home(request):
+    return render(request, 'login.html')
 
 @api_view(['GET'])
 def get_books(request):
@@ -44,16 +48,25 @@ def return_book(request, book_id):
 
 @api_view(['PUT'])
 def renew_book(request, book_id):
-    borrowed_book = get_object_or_404(BorrowedBook, student=request.user, book__id=book_id)
+    try:
+        borrowed_book = get_object_or_404(BorrowedBook, student=request.user, book__id=book_id)
+    except BorrowedBook.DoesNotExist:
+        return Response({'message': 'No matching records for book'}, status=404)
+    
     if borrowed_book.renewal_count >= 1:
         return Response({'error': 'You have already renewed this book once'}, status=400)
-    
-    borrowed_book.due_date += datetime.timedelta(days=30)
+
+    if borrowed_book.due_date > timezone.now().date():
+        time_left = borrowed_book.due_date - timezone.now().date()
+        return Response({'message': f'Not due for renewal. Time left to renew: {time_left.days} days'}, status=400)
+
+    borrowed_book.due_date += timezone.timedelta(days=30)
     borrowed_book.renewal_count += 1
     borrowed_book.save()
-    serializer = BorrowedBookSerializer(borrowed_book)
-    return Response(serializer.data)
 
+    return Response({'message': 'Book renewed successfully'}, status=200)
+
+    
 @api_view(['GET'])
 def get_books(request):
     books = Book.objects.all()
@@ -107,19 +120,21 @@ def student_dashboard(request):
     borrowed_books = BorrowedBook.objects.filter(student=student)
     return render(request, 'student_dashboard.html', {'borrowed_books': borrowed_books})
 
-@login_required
-def renew_book(request, book_instance_id):
-    book_instance = BookInstance.objects.get(id=book_instance_id)
+# @login_required
+def renew_book(request, book_id):
+    book_instance = get_object_or_404(BookInstance, id=book_id)
+    
     if request.method == 'POST':
-        # Check if the book is eligible for renewal
         if book_instance.due_back < datetime.now().date():
             return render(request, 'error.html', {'message': 'Book overdue. Cannot renew.'})
         
-        # Extend the due date by 7 days
-        book_instance.due_back += timedelta(days=7)
+        book_instance.due_back += timedelta(days=30)
         book_instance.save()
         return redirect('student_dashboard')
+    
     return render(request, 'renew_book.html', {'book_instance': book_instance})
+
+
 
 @login_required
 def librarian_dashboard(request):
@@ -154,3 +169,5 @@ def login_page(request):
 @login_required
 def books_api(request):
     return render(request, 'books.html')
+
+

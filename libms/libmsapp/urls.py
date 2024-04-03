@@ -3,7 +3,6 @@ from . import views
 
 urlpatterns = [
     path('', views.login_page, name='login'),
-    path('api/', views.home, name='home'),
     path('student/dashboard/', views.student_dashboard, name='student_dashboard'),
     path('librarian/dashboard/', views.librarian_dashboard, name='librarian_dashboard'),
     path('librarian/mark_returned/<int:borrowed_book_id>/', views.mark_returned, name='mark_returned'),

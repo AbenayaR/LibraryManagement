@@ -35,7 +35,7 @@
         <input type="hidden" name="next" value="{{request.GET.next}}">
         {% endif %}
         {% comment %} <a class="mx-auto mb-4" href=""><img src="#" alt="" width="140" height="72"></a> {% endcomment %}
-        <h1 class="h3 mt-3 mb-3 fw-normal">Sign-in to SocialMedia</h1>
+        <h1 class="h3 mt-3 mb-3 fw-normal"> Library Management System </h1>
         
         {% include 'commons/messages.html' %}
         
@@ -59,16 +59,15 @@
                 <button class="btn btn-primary w-100 py-2" type="submit">Sign in</button>
             </div>
             <div class="col">
-                <a class="btn btn-outline-primary w-100 py-2" href='{% url "accounts:register" %}'>Sign Up</a>
+                <a> Register </a>
             </div>
         </div>
         <p class="text-body-secondary mt-1">
             Forgot Your Password ? 
-            <a href="{% url 'accounts:password_reset' %}">
-                Reset Password
+            <a> Reset Password
             </a>
         </p>
-        <p class="mt-4 mb-3 text-body-secondary">&copy; 2021 – {% now 'Y' %}</p>
+        <p class="mt-4 mb-3 text-body-secondary">&copy; 2024 – {% now 'Y' %}</p>
 
     </form>
 </div>
